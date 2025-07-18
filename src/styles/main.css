@@ -1,0 +1,11 @@
+body {
+    font-family: 'Inter', sans-serif; 
+    background-color: #111827;
+}
+.link-preview-img {
+    aspect-ratio: 1.91 / 1;
+    object-fit: cover;
+}
+.twitter-tweet-container iframe {
+    border-radius: 12px !important;
+}

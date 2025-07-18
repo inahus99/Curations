@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.parcel-cache/
+
+# env files
+.env
+.env.local
+
+# misc
+.DS_Store
+*.log
