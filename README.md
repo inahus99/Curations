@@ -39,9 +39,9 @@ The platform utilizes Supabase Realtime capabilities to sync and persist data dy
 
 ---
 ## Screenshots
-![Note](assests/image.png)
+![](assets/image.png)
 
-![Note](assests/imagetwo.png)
+![](assets/home.png)
 
 
 ---
