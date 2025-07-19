@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import useScraps from './hooks/useScraps';
 import AddCurationForm from './components/AddCurationForm';
@@ -10,13 +9,13 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [filter, setFilter] = useState('');
 
-  const visible = scraps.filter(s => (
+  const visible = scraps.filter(s =>
     (s.title || s.content || '').toLowerCase().includes(filter.toLowerCase())
-  ));
+  );
 
   return (
     <div className="bg-gray-900 min-h-screen p-4">
-      {/* ------------------------------------------------ header */}
+      {/* ------------------ Header ------------------ */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Curations</h1>
@@ -31,16 +30,15 @@ export default function App() {
         />
       </header>
 
-      {/* -------------------------------------- add‑new form */}
+      {/* ------------------ Add Form ------------------ */}
       <AddCurationForm />
 
-      {/* --------------------------------------- list area */}
+      {/* ------------------ Scrap List ------------------ */}
       {dataLoading ? (
         <p className="text-gray-400">Loading scraps…</p>
       ) : visible.length === 0 ? (
         <p className="text-gray-400">No results.</p>
       ) : (
-        // Masonry: multi‑column, each item keeps natural height
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
           {visible.map(scrap => (
             <CurationCard
@@ -53,7 +51,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ------------------------------------ detail modal */}
+      {/* ------------------ Modal ------------------ */}
       <Modal scrap={modal} onClose={() => setModal(null)} />
     </div>
   );
