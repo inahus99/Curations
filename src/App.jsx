@@ -1,58 +1,67 @@
+
 import React, { useState } from 'react';
-import useScraps from './hooks/useScraps';
 import AddCurationForm from './components/AddCurationForm';
 import CurationCard from './components/CurationCard';
 import Modal from './components/Modal';
+import useScraps from './hooks/useScraps';
+import './styles/main.css';
 
 export default function App() {
-  const { scraps, loading: dataLoading, remove } = useScraps();
-  const [modal, setModal] = useState(null);
-  const [filter, setFilter] = useState('');
+  const { scraps, addScrap, deleteScrap } = useScraps();
+  const [selectedScrap, setSelectedScrap] = useState(null);
 
-  const visible = scraps.filter(s =>
-    (s.title || s.content || '').toLowerCase().includes(filter.toLowerCase())
-  );
+  const handleCardClick = (scrap) => {
+    setSelectedScrap(scrap);
+  };
+
+  const handleDeleteClick = (id) => {
+ 
+    deleteScrap(id);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedScrap(null);
+  };
 
   return (
-    <div className="bg-gray-900 min-h-screen p-4">
-      {/* ------------------ Header ------------------ */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Curations</h1>
-          <p className="text-gray-400">Save anything, anywhere.</p>
-        </div>
-        <input
-          type="text"
-          placeholder="Search…"
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          className="bg-gray-700 text-white p-2 rounded w-full sm:w-60"
-        />
-      </header>
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="max-w-5xl mx-auto p-6">
+        {/* Header */}
+        <header className="mb-8">
+          <h1 className="text-4xl font-extrabold"> Curations. </h1>
+          <p className="mt-2 text-gray-500">
+            Save your notes, images, links &amp; code snippets.
+          </p>
+        </header>
 
-      {/* ------------------ Add Form ------------------ */}
-      <AddCurationForm />
+        {/* Add new scrap form */}
+        <section className="mb-10">
+          <AddCurationForm onAdd={addScrap} />
+        </section>
 
-      {/* ------------------ Scrap List ------------------ */}
-      {dataLoading ? (
-        <p className="text-gray-400">Loading scraps…</p>
-      ) : visible.length === 0 ? (
-        <p className="text-gray-400">No results.</p>
-      ) : (
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {visible.map(scrap => (
-            <CurationCard
-              key={scrap.id}
-              scrap={scrap}
-              onCardClick={setModal}
-              onDeleteClick={remove}
-            />
-          ))}
-        </div>
+        {/* Grid of cards */}
+        <section>
+          {scraps.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {scraps.map((scrap) => (
+                <CurationCard
+                  key={scrap.id}
+                  scrap={scrap}
+                  onCardClick={handleCardClick}
+                  onDeleteClick={handleDeleteClick}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No scraps yet. Add one above!</p>
+          )}
+        </section>
+      </div>
+
+      {/* Modal for viewing a scrap  */}
+      {selectedScrap && (
+        <Modal scrap={selectedScrap} onClose={handleCloseModal} />
       )}
-
-      {/* ------------------ Modal ------------------ */}
-      <Modal scrap={modal} onClose={() => setModal(null)} />
     </div>
   );
 }

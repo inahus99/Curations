@@ -1,23 +1,28 @@
-
+// src/components/CurationCard.jsx
 import React, { useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
+export default function CurationCard({
+  scrap,
+  onCardClick = () => {},        // default no-op
+  onDeleteClick = () => {},      // default no-op
+}) {
   const timestamp = scrap.created_at
     ? new Date(scrap.created_at).toLocaleString()
     : 'Just now';
 
   const [imgError, setImgError] = useState(false);
   const [linkImgError, setLinkImgError] = useState(false);
+
   useEffect(() => { setImgError(false); }, [scrap.image_url]);
   useEffect(() => { setLinkImgError(false); }, [scrap.url, scrap.preview_image]);
-
   useEffect(() => {
-    if (scrap.embed_html && window.twttr && window.twttr.widgets) {
+    if (scrap.embed_html && window.twttr?.widgets) {
       window.twttr.widgets.load();
     }
   }, [scrap.embed_html]);
+
   const SafeImg = ({ src, alt, className, setError }) => (
     <img
       src={src}
@@ -28,18 +33,26 @@ export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
     />
   );
 
-  /* ---------------------------- RENDER SWITCH -------------------*/
+  // clamp to 3 lines
+  const noteStyle = {
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical',
+    WebkitLineClamp: 3,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  };
+
   const renderContent = () => {
     switch (scrap.type) {
-      /* --------------------------- NOTE --------------------------*/
       case 'note':
         return (
           <div className="p-5 flex-grow">
-            <p className="text-gray-300 whitespace-pre-wrap">{scrap.content}</p>
+            <p style={noteStyle} className="text-gray-800">
+              {scrap.content}
+            </p>
           </div>
         );
 
-      /* -------------------------- IMAGE -------------------------*/
       case 'image':
         return (
           <div className="p-5 flex-grow">
@@ -51,23 +64,25 @@ export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
                 setError={setImgError}
               />
             ) : (
-              <div className="w-full h-48 flex items-center justify-center bg-gray-700 rounded-lg">
-                <span className="text-gray-400">Image not available</span>
+              <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+                <span className="text-gray-500">Image not available</span>
               </div>
             )}
             {scrap.title && !imgError && (
-              <p className="text-gray-300 mt-2 truncate">{scrap.title}</p>
+              <p className="text-gray-800 mt-2 truncate">
+                {scrap.title}
+              </p>
             )}
           </div>
         );
 
-      /* --------------------------- LINK --------------------------*/
       case 'link': {
-
         const attemptDirectImage = !scrap.embed_html && !scrap.cfTitle;
         return (
           <div className="p-5 flex-grow">
-            <h3 className="font-bold mb-2 truncate">{scrap.title || scrap.url}</h3>
+            <h3 className="font-bold mb-2 truncate text-gray-800">
+              {scrap.title || scrap.url}
+            </h3>
 
             {attemptDirectImage && !linkImgError && (
               <SafeImg
@@ -79,13 +94,20 @@ export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
             )}
 
             {linkImgError && scrap.embed_html && (
-              <div className="twitter-tweet-container" dangerouslySetInnerHTML={{ __html: scrap.embed_html }} />
+              <div
+                className="twitter-tweet-container"
+                dangerouslySetInnerHTML={{ __html: scrap.embed_html }}
+              />
             )}
 
             {linkImgError && !scrap.embed_html && scrap.cfTitle && (
-              <div className="bg-gray-700 p-4 rounded">
-                <h4 className="text-white font-semibold">{scrap.cfTitle} ({scrap.cfRating})</h4>
-                <p className="text-gray-400 text-sm mt-1">Tags: {scrap.cfTags.join(', ')}</p>
+              <div className="bg-gray-100 p-4 rounded">
+                <h4 className="text-gray-800 font-semibold">
+                  {scrap.cfTitle} ({scrap.cfRating})
+                </h4>
+                <p className="text-gray-600 text-sm mt-1">
+                  Tags: {scrap.cfTags.join(', ')}
+                </p>
               </div>
             )}
 
@@ -99,7 +121,12 @@ export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
             )}
 
             {linkImgError && !scrap.embed_html && !scrap.cfTitle && !scrap.preview_image && (
-              <a href={scrap.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate block">
+              <a
+                href={scrap.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline truncate block"
+              >
                 {scrap.url}
               </a>
             )}
@@ -107,7 +134,6 @@ export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
         );
       }
 
-      /* --------------------------- CODE --------------------------*/
       case 'code':
         return (
           <div className="p-5 flex-grow overflow-auto">
@@ -126,19 +152,37 @@ export default function CurationCard({ scrap, onCardClick, onDeleteClick }) {
     }
   };
 
-  /* ----------------------- CARD WRAPPER ------------------------*/
   const clickable = scrap.type !== 'link';
+
   return (
     <div
-      className="scrap-card bg-gray-800 rounded-xl shadow-md flex flex-col overflow-hidden border border-gray-700 hover:border-blue-500 transition cursor-pointer"
+      className="
+        scrap-card
+        bg-white
+        rounded-xl
+        shadow-md
+        flex flex-col
+        overflow-hidden
+        border border-gray-200
+        hover:border-blue-500
+        transition
+        cursor-pointer
+      "
       onClick={() => clickable && onCardClick(scrap)}
     >
-      <div className="flex flex-col flex-grow min-h-0">{renderContent()}</div>
-      <div className="bg-gray-800/50 p-3 flex justify-between items-center border-t border-gray-700/50">
+      <div className="flex flex-col flex-grow min-h-0">
+        {renderContent()}
+      </div>
+      <div className="bg-white p-3 flex justify-between items-center border-t border-gray-200">
         <span className="text-xs text-gray-500">{timestamp}</span>
         <button
-          onClick={e => { e.stopPropagation(); onDeleteClick(scrap.id); }}
-          className="text-gray-500 hover:text-red-500 p-1 rounded-full hover:bg-red-500/10"
+          type="button"                     // ← ensure it’s not a submit
+          onClick={e => {
+            e.stopPropagation();            // prevent card click
+            console.log('Deleting:', scrap.id);
+            onDeleteClick(scrap.id);
+          }}
+          className="text-gray-500 hover:text-red-600 p-1 rounded-full hover:bg-red-100 cursor-pointer"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
