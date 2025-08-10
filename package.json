@@ -25,7 +25,8 @@
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
-    "spotify-audio-element": "^1.0.2"
+    "spotify-audio-element": "^1.0.2",
+    "syntax-highlighter": "^0.0.3"
   },
   "devDependencies": {
     "@parcel/babel-preset-env": "^2.15.4",

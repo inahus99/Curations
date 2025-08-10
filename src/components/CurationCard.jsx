@@ -1,12 +1,11 @@
-// src/components/CurationCard.jsx
 import React, { useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 export default function CurationCard({
   scrap,
-  onCardClick = () => {},        // default no-op
-  onDeleteClick = () => {},      // default no-op
+  onCardClick = () => {},
+  onDeleteClick = () => {},
 }) {
   const timestamp = scrap.created_at
     ? new Date(scrap.created_at).toLocaleString()
@@ -23,58 +22,13 @@ export default function CurationCard({
     }
   }, [scrap.embed_html]);
 
-  const SafeImg = ({ src, alt, className, setError }) => (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      onError={() => setError(true)}
-      onLoad={() => setError(false)}
-    />
-  );
-
-  // clamp to 3 lines
-  const noteStyle = {
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical',
-    WebkitLineClamp: 3,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  };
-
   const renderContent = () => {
     switch (scrap.type) {
       case 'note':
-        return (
-          <div className="p-5 flex-grow">
-            <p style={noteStyle} className="text-gray-800">
-              {scrap.content}
-            </p>
-          </div>
-        );
+        return <NoteContent text={scrap.content} />;
 
       case 'image':
-        return (
-          <div className="p-5 flex-grow">
-            {!imgError ? (
-              <SafeImg
-                src={scrap.image_url}
-                alt={scrap.title || 'Image'}
-                className="w-full h-48 object-cover rounded-lg"
-                setError={setImgError}
-              />
-            ) : (
-              <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
-                <span className="text-gray-500">Image not available</span>
-              </div>
-            )}
-            {scrap.title && !imgError && (
-              <p className="text-gray-800 mt-2 truncate">
-                {scrap.title}
-              </p>
-            )}
-          </div>
-        );
+        return <ImageContent src={scrap.image_url} title={scrap.title} />;
 
       case 'link': {
         const attemptDirectImage = !scrap.embed_html && !scrap.cfTitle;
@@ -135,17 +89,7 @@ export default function CurationCard({
       }
 
       case 'code':
-        return (
-          <div className="p-5 flex-grow overflow-auto">
-            <SyntaxHighlighter
-              language={scrap.language || 'text'}
-              style={tomorrow}
-              className="rounded-lg"
-            >
-              {scrap.code}
-            </SyntaxHighlighter>
-          </div>
-        );
+        return <CodeContent code={scrap.code} language={scrap.language} />;
 
       default:
         return null;
@@ -176,9 +120,9 @@ export default function CurationCard({
       <div className="bg-white p-3 flex justify-between items-center border-t border-gray-200">
         <span className="text-xs text-gray-500">{timestamp}</span>
         <button
-          type="button"                     // ← ensure it’s not a submit
+          type="button"
           onClick={e => {
-            e.stopPropagation();            // prevent card click
+            e.stopPropagation();
             console.log('Deleting:', scrap.id);
             onDeleteClick(scrap.id);
           }}
@@ -192,3 +136,102 @@ export default function CurationCard({
     </div>
   );
 }
+
+/* -------------------- independent containers -------------------- */
+
+// New component for truncated and highlighted code
+function CodeContent({ code, language }) {
+  const LINES_TO_SHOW = 5;
+  const codeLines = code.split('\n');
+  const isTruncated = codeLines.length > LINES_TO_SHOW;
+  const displayCode = isTruncated
+    ? codeLines.slice(0, LINES_TO_SHOW).join('\n') + '\n...'
+    : code;
+
+  return (
+    <div className="p-4 flex-grow bg-gray-900 rounded-lg text-white">
+      <SyntaxHighlighter
+        language={language || 'text'}
+        style={tomorrow}
+        customStyle={{
+          background: 'transparent',
+          padding: 0,
+          margin: 0,
+          overflow: 'hidden',
+          maxHeight: `${LINES_TO_SHOW * 1.5}rem`, // Adjust based on line-height
+        }}
+      >
+        {displayCode}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
+// Reusable image component for consistency
+function ImageContent({ src, title }) {
+  const [imgError, setImgError] = useState(false);
+
+  const SafeImg = ({ src, alt, className }) => (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setImgError(true)}
+      onLoad={() => setImgError(false)}
+    />
+  );
+
+  return (
+    <div className="p-5 flex-grow">
+      {!imgError ? (
+        <div className="w-full max-h-48 overflow-hidden rounded-lg">
+          <SafeImg
+            src={src}
+            alt={title || 'Image'}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+          <span className="text-gray-500">Image not available</span>
+        </div>
+      )}
+      {title && !imgError && (
+        <p className="text-gray-800 mt-2 truncate">
+          {title}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Existing NoteContent for consistency
+function NoteContent({ text }) {
+  return (
+    <div className="p-5 flex-grow">
+      <p
+        style={{
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 3,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+        className="text-gray-800"
+      >
+        {text}
+      </p>
+    </div>
+  );
+}
+
+// Existing SafeImg component, now internal to the main component
+const SafeImg = ({ src, alt, className, setError }) => (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setError(true)}
+      onLoad={() => setError(false)}
+    />
+  );

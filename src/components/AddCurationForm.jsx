@@ -1,4 +1,4 @@
-// src/components/AddCurationForm.jsx
+
 import React, { useState } from 'react';
 import { supabase, getUserId } from '../services/supabase';
 
@@ -33,8 +33,6 @@ export default function AddCurationForm() {
     e.preventDefault();
     if (saving) return;
     setSaving(true);
-
-    // build the record payload
     const record = {
       user_id:     userId,
       type:        scrapType,
